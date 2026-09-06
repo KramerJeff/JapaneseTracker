@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Today's Japanese</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#26085;</text></svg>">
+<meta name="theme-color" content="#f2ede2">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --ink:#171a2e;
+    --ink-soft:#454a6b;
+    --washi:#f2ede2;
+    --washi-2:#e6dfd0;
+    --fuji:#7d5ba6;
+    --fuji-deep:#5c3f80;
+    --moss:#5f7a52;
+    --line:#c9c0ac;
+  }
+  *{box-sizing:border-box}
+  .wrap{
+    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    color:var(--ink);
+    background:var(--washi);
+    max-width:640px;
+    margin:0 auto;
+    padding:28px 22px 34px;
+    line-height:1.5;
+  }
+  .masthead{
+    display:flex;align-items:baseline;gap:12px;
+    border-bottom:2px solid var(--ink);
+    padding-bottom:10px;margin-bottom:22px;
+  }
+  .masthead h1{font-size:1.35rem;margin:0;font-weight:600;letter-spacing:.01em}
+  .masthead span{font-size:1.05rem;color:var(--fuji-deep)}
+
+  .floor{
+    background:var(--ink);color:var(--washi);
+    padding:14px 16px;border-radius:2px;margin-bottom:22px;
+  }
+  .floor b{display:block;font-size:.95rem;margin-bottom:3px}
+  .floor p{margin:0;font-size:.88rem;opacity:.82;line-height:1.45}
+
+  .energy{display:flex;gap:8px;margin-bottom:16px}
+  .energy button{
+    flex:1;padding:9px 4px;font:inherit;font-size:.82rem;
+    background:transparent;border:1px solid var(--line);
+    border-radius:2px;color:var(--ink-soft);cursor:pointer;
+  }
+  .energy button[aria-pressed="true"]{
+    background:var(--fuji);border-color:var(--fuji);color:#fff;
+  }
+  .energy button:focus-visible,.draw:focus-visible,.mini:focus-visible,.day:focus-visible{
+    outline:2px solid var(--fuji-deep);outline-offset:2px;
+  }
+
+  .draw{
+    width:100%;padding:15px;font:inherit;font-size:1.05rem;font-weight:600;
+    background:var(--fuji-deep);color:#fff;border:none;border-radius:2px;
+    cursor:pointer;margin-bottom:18px;
+  }
+  .draw:hover{background:var(--fuji)}
+
+  .card{
+    border:1px solid var(--line);background:#fbf8f1;
+    padding:20px 18px;border-radius:2px;margin-bottom:18px;min-height:132px;
+    display:flex;flex-direction:column;justify-content:center;
+  }
+  .card.empty{color:var(--ink-soft);font-size:.92rem;text-align:center;font-style:italic}
+  .card .jp{font-size:.9rem;color:var(--fuji-deep);margin-bottom:5px}
+  .card h2{margin:0 0 7px;font-size:1.28rem;font-weight:600;line-height:1.25}
+  .card p{margin:0 0 14px;font-size:.93rem;color:var(--ink-soft)}
+  .card .meta{font-size:.8rem;color:var(--moss);margin-bottom:14px}
+  .row{display:flex;gap:9px;flex-wrap:wrap}
+  .mini{
+    padding:8px 13px;font:inherit;font-size:.84rem;background:transparent;
+    border:1px solid var(--line);border-radius:2px;color:var(--ink);cursor:pointer;
+  }
+  .mini:hover{background:var(--washi-2)}
+  .mini.done{background:var(--moss);border-color:var(--moss);color:#fff}
+
+  .log h3{font-size:.9rem;margin:0 0 4px;font-weight:600}
+  .log .note{font-size:.8rem;color:var(--ink-soft);margin:0 0 10px}
+  .dots{display:grid;grid-template-columns:repeat(15,1fr);gap:5px;margin-bottom:8px}
+  .day{
+    aspect-ratio:1;border:1px solid var(--line);background:transparent;
+    border-radius:1px;padding:0;cursor:pointer;
+  }
+  .day.on{background:var(--fuji);border-color:var(--fuji)}
+  .day.today{border-color:var(--ink);border-width:2px}
+  .tally{font-size:.82rem;color:var(--ink-soft)}
+
+  .rotate{
+    margin-top:20px;padding-top:14px;border-top:1px solid var(--line);
+    font-size:.84rem;color:var(--ink-soft);
+  }
+  .rotate b{color:var(--ink)}
+  @media (prefers-reduced-motion:no-preference){
+    .card{transition:opacity .18s ease}
+  }
+</style>
+
+<div class="wrap">
+  <div class="masthead">
+    <h1>Today's Japanese</h1><span>今日の日本語</span>
+  </div>
+
+  <div class="floor">
+    <b>The floor is five minutes.</b>
+    <p>Clear your WaniKani reviews. That counts as a full day. Anything past it is a bonus, not the requirement.</p>
+  </div>
+
+  <div class="energy" role="group" aria-label="How much have you got today?">
+    <button data-e="low" aria-pressed="false">Running on empty</button>
+    <button data-e="mid" aria-pressed="true">Normal</button>
+    <button data-e="high" aria-pressed="false">Actually up for it</button>
+  </div>
+
+  <button class="draw" id="draw">Pick something for me</button>
+
+  <div class="card empty" id="card">Tap the button. Don't browse the list — that's the part your brain will use to stall.</div>
+
+  <div class="log">
+    <h3>Last 30 days</h3>
+    <p class="note">No streaks here on purpose. A gap costs you nothing; the next square is always available.</p>
+    <div class="dots" id="dots"></div>
+    <p class="tally" id="tally"></p>
+  </div>
+
+  <div class="rotate" id="rotate"></div>
+</div>
+
+<script>
+const MENU=[
+ {jp:"復習",t:"WaniKani reviews",d:"Clear the queue. Do it on the toilet if that's what it takes.",m:"5 min · the floor",e:["low","mid","high"]},
+ {jp:"文法",t:"One grammar session",d:"Bunpro or Renshuu. One session, then stop even if it's going well.",m:"10 min",e:["mid","high"]},
+ {jp:"鬼滅",t:"Demon Slayer, purely for fun",d:"Japanese subs on, English underneath. Do not pause. Notice a word or two and let the rest wash over you.",m:"25 min · reward track",e:["low","mid","high"]},
+ {jp:"視聴",t:"New episode of your mining show",d:"Shirokuma Cafe, Takagi-san, whichever is current. Watch it once, no clicking.",m:"25 min",e:["mid","high"]},
+ {jp:"採掘",t:"Rewatch and mine 5–10 words",d:"Same episode as last time. Click anything you half-recognise. This is where the actual learning happens.",m:"25 min · the good stuff",e:["high"]},
+ {jp:"字幕",t:"Rewatch with English subs hidden",d:"Third pass on an episode you've already mined. You'll be surprised how much lands.",m:"25 min",e:["mid","high"]},
+ {jp:"村",t:"Animal Crossing in Japanese",d:"Twenty minutes. Screenshot two villager lines you almost understood.",m:"20 min · Switch 2",e:["low","mid","high"]},
+ {jp:"冒険",t:"Pokémon or Dragon Quest in Japanese",d:"Furigana on. Read the menus properly, skim the dialogue.",m:"20 min · Switch 2",e:["mid","high"]},
+ {jp:"写真",t:"Shashingo photo walk",d:"Wander the town, photograph things, build flashcards out of it.",m:"10 min",e:["low","mid"]},
+ {jp:"軽い",t:"3DS in Japanese, low effort",d:"Rhythm Heaven, Picross, Tomodachi Life. Barely counts. Counts.",m:"10 min · empty-tank option",e:["low"]},
+ {jp:"仮名",t:"Ten minutes of kana or vocab drills",d:"Renshuu or Duolingo. Mechanical, no thinking required.",m:"10 min",e:["low","mid"]},
+ {jp:"会話",t:"Send one HelloTalk message",d:"One. Badly. A native speaker will correct it and that correction will stick harder than an hour of review.",m:"5 min · output",e:["low","mid","high"]},
+ {jp:"音読",t:"Shadow the opening theme",d:"Play it, read the lyrics, say it out loud over the top. Ridiculous and effective.",m:"10 min",e:["mid","high"]},
+ {jp:"戦闘",t:"Rewatch a fight scene you know by heart",d:"You already know what's being said emotionally, so the Japanese maps straight onto meaning. Free comprehensible input.",m:"10 min",e:["low","mid","high"]},
+ {jp:"予約",t:"Book an italki lesson two weeks out",d:"Manufacture a deadline while you've got the energy. Future you will need it.",m:"5 min · do this on a good day",e:["high"]}
+];
+
+let energy="mid", state={days:{},last:null,start:null};
+const $=s=>document.querySelector(s);
+const key=d=>d.toISOString().slice(0,10);
+const today=key(new Date());
+
+function load(){
+  try{const r=localStorage.getItem("jp-menu-state");if(r)state=JSON.parse(r);}catch(e){}
+  if(!state.days)state.days={};
+  if(!state.start)state.start=today;
+  render();
+}
+function save(){
+  try{localStorage.setItem("jp-menu-state",JSON.stringify(state));}catch(e){}
+}
+
+function pick(){
+  const pool=MENU.filter(x=>x.e.includes(energy)&&x.t!==state.last);
+  const c=pool[Math.floor(Math.random()*pool.length)];
+  state.last=c.t;
+  const done=state.days[today];
+  $("#card").className="card";
+  $("#card").innerHTML=
+    `<div class="jp">${c.jp}</div><h2>${c.t}</h2><p>${c.d}</p>`+
+    `<div class="meta">${c.m}</div><div class="row">`+
+    `<button class="mini ${done?"done":""}" id="did">${done?"Logged for today":"I did this"}</button>`+
+    `<button class="mini" id="again">Something else</button></div>`;
+  $("#again").onclick=pick;
+  $("#did").onclick=()=>{state.days[today]=true;save();render();pick();};
+}
+
+function render(){
+  const dots=$("#dots");dots.innerHTML="";
+  let n=0;
+  for(let i=29;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);const k=key(d);
+    const b=document.createElement("button");
+    b.className="day"+(state.days[k]?" on":"")+(k===today?" today":"");
+    b.title=k;b.setAttribute("aria-label",k+(state.days[k]?": touched Japanese":": nothing logged"));
+    b.onclick=()=>{state.days[k]?delete state.days[k]:state.days[k]=true;save();render();};
+    dots.appendChild(b);
+    if(state.days[k])n++;
+  }
+  $("#tally").textContent=n+" of the last 30 days touched. That number only ever goes up.";
+  const wk=Math.floor((new Date(today)-new Date(state.start))/6048e5)+1;
+  $("#rotate").innerHTML=wk>=4
+    ? `<b>Week ${wk} — time to swap something.</b> Retire whatever's started feeling like homework and put a new show or game in its place. Demon Slayer stays.`
+    : `<b>Week ${wk}.</b> Around week 4, swap one item out before it gets stale. Rotating is the plan, not a failure of it.`;
+}
+
+document.querySelectorAll(".energy button").forEach(b=>{
+  b.onclick=()=>{
+    energy=b.dataset.e;
+    document.querySelectorAll(".energy button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+    pick();
+  };
+});
+$("#draw").onclick=pick;
+load();
+</script>
